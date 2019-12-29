@@ -1,7 +1,9 @@
 from flask import (
     Flask,
-    render_template as render
-)
+    render_template as render,
+    flash,
+    redirect,
+    url_for)
 from flask_dotenv import DotEnv
 
 from forms import (
@@ -40,14 +42,27 @@ def about():
     return render('about.html', title='About')
 
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    return render('register.html', title='Register', form=RegistrationForm())
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        flash(f'Account created for {form.username.data}!', 'success')
+        return redirect(url_for('home'))
+
+    return render('register.html', title='Register', form=form)
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render('login.html', title='Login', form=LoginForm())
+    form = LoginForm()
+    if form.validate_on_submit():
+        if form.email.data == 'admin@blog.com' and form.password.data == 'password':
+            flash('You have been successfully logged in!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Login Unsuccessful! Please check username and password', 'danger')
+
+    return render('login.html', title='Login', form=form)
 
 
 if __name__ == '__main__':
